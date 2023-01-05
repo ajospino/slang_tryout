@@ -21,9 +21,9 @@ class APIRequest
         return response.parse
     end
 
-    def parseJson(response)
+    def parseJson(r)
         result = {"user_sessions":{}}
-        actvities = {"actvities":[  
+        activities = {"activities":[  
                                     {
                                         "id": 198891,
                                         "user_id": "emr5zqid",
@@ -44,18 +44,18 @@ class APIRequest
                                     }
                                 ]
                     }
-        sessions = result["user_sessions"]
+        response = activities[:activities]
+        sessions = result[:user_sessions]
         previousUser = " "
         previousTime = 0
         count = -1
-        actvities.each do |a| 
-            regisUser = a.value(:user_id)
-            activityId = a.value(:id)
-            activityStart = a.value(:first_seen_at)
-            activityEnd = a.value(:answered_at)
-
-            unless sessions.has_key? regisUser
-                sessions.store(regisUser , [
+        response.each do |a|
+            regisUser = a[:user_id]
+            activityId = a[:id]
+            activityStart = a[:first_seen_at]
+            activityEnd = a[:answered_at]
+            unless sessions.has_key? regisUser.to_sym
+                sessions.store(regisUser.to_sym , [
                                         {
                                         "ended_at": 0,
                                         "started_at": activityStart,
@@ -71,24 +71,24 @@ class APIRequest
                 if previousTime != 0
                     timeDifference = dateCalculator(previousTime, activityStart)
                     if timeDifference<=300 && regisUser.eql?(previousUser)
-                        currentDuration = sessions.value(regisUser)[count].value("duration_seconds") + timeDifference
-                        sessions.value(regisUser)[count].store("ended_at", activityEnd)
-                        sessions.value(regisUser)[count].store("duration_seconds", currentDuration) 
-                        sessions.value(regisUser)[count].value("activity_ids").push(activityId)
+                        currentDuration = sessions[regisUser.to_sym][count][:duration_seconds] + timeDifference
+                        sessions[regisUser.to_sym][count].store(:ended_at, activityEnd)
+                        sessions[regisUser.to_sym][count].store(:duration_seconds, currentDuration) 
+                        sessions[regisUser.to_sym][count][:activity_ids].push(activityId)
                         previousTime = activityEnd
                     elsif timeDifference>300 && regisUser.eql?(previousUser)
-                        sessions.value(regisUser).push(
+                        sessions[regisUser.to_sym].push(
                                                         {
                                                         "ended_at": 0,
                                                         "started_at": activityStart,
                                                         "activity_ids": [activityId] ,
                                                         "duration_seconds": 0 
                                                         }
-                                                      )
+                                                    )
                         previousTime = activityEnd
                         count+=1
                     else
-                        if !(previousUser.eql?(regisUser)) && sessions.has_key?(regisUser)
+                        if !(previousUser.eql?(regisUser)) && !(sessions.has_key?(regisUser))
                             sessions.store(regisUser , [
                                                         {
                                                         "ended_at": 0,
@@ -96,8 +96,8 @@ class APIRequest
                                                         "activity_ids": [activityId] ,
                                                         "duration_seconds": 0 
                                                         }
-                                                       ]
-                                          )
+                                                    ]
+                                        )
                             previousTime = activityEnd
                             previousUser = regisUser
                             count=0  
@@ -119,14 +119,15 @@ class APIRequest
                     count=0   
                 end 
             end
-        end
-
+            puts sessions
+        end 
+        puts result
     end
 
     def dateCalculator(date1, date2)
         time1 = Time.parse(date1)
         time2 = Time.parse(date2)
-        result = time1 - time2
+        result = (time1 - time2).abs
         return result
     end
 
