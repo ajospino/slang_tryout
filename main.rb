@@ -6,10 +6,11 @@ Dotenv.load
 class APIRequest
     @@address = ENV['ADDRESS']
     @@secretKey =  ENV['API_KEY']
+    @@postAddress = ENV['ADDRESS_POST']
     def main()
         response = getRequest()
         dataStructure = parseJson(response)
-        #postRequest(dataStructure)
+        postRequest(dataStructure)
     end
 
     def getRequest()
@@ -149,7 +150,7 @@ class APIRequest
 
 
     def postRequest(user_sessions)
-        response = HTTP.auth(@@secretKey).post(@@address, :json => user_sessions)
+        response = HTTP.auth(@@secretKey).post(@@postAddress, :json => user_sessions)
         puts response.code
     end
 end
