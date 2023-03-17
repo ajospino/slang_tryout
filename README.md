@@ -1,7 +1,7 @@
 # Slang_tryout
 ### Repository for a basic API client interaction ###
 
-This is a project for internship tryout, made in Ruby.
+This is a project for internship an tryout, made in Ruby.
 
 ### Gems used: ###
 You can see the Gemfile to check which gems i used, all of them coupled with [Bundler](https://bundler.io/)
